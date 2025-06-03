@@ -94,6 +94,9 @@ default_palette:
 welcome_txt:
 .byte 'W','E','L','C', 'O', 'M', 'E', 0
 
+helloworld_txt:
+.byte 'H','E','L','L', 'O', ' ', 'W', 'O', 'R', 'L', 'D', 0
+
 ;*****************************************************************
 ; Import both the background and sprite character sets
 ;*****************************************************************
@@ -343,11 +346,12 @@ paletteloop:
     ; clear 1st name table
     jsr clear_nametable
 
-    ; draw some text on the screen
+    ; draw welcome text on the screen
     lda PPU_STATUS ; reset address latch
     lda #$20 ; set PPU address to $208A (Row = 4, Column = 10)
+             ; address = base address + 32 × row + column
     sta PPU_VRAM_ADDRESS2
-    lda #$8A
+    lda #$8A ; 32 x 4 + 10 = 138 = 0x8A
     sta PPU_VRAM_ADDRESS2
 
     ldx #0
@@ -358,6 +362,22 @@ textloop:
     cmp #0
     beq :+
         jmp textloop
+    :
+
+    ; draw helloworld text on the screen
+    lda #$20 ; set PPU address to $20CA (Row = 6, Column = 10)
+    sta PPU_VRAM_ADDRESS2
+    lda #$CA ; 32 x 6 + 10 = 202 = 0xCA
+    sta PPU_VRAM_ADDRESS2
+
+    ldx #0
+textloop2:
+    lda helloworld_txt, x
+    sta PPU_VRAM_IO
+    inx
+    cmp #0
+    beq :+
+        jmp textloop2
     :
 
     ; place our bat sprite on the screen
