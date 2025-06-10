@@ -77,6 +77,39 @@ d_y      : .res 1 ; y velocity of ball
 oam: .res 256	; sprite OAM data
 
 ;*****************************************************************
+; Include Sound Engine, Sound Effects and Music Data
+;*****************************************************************
+
+.segment "CODE"
+
+; FamiStudio config.
+FAMISTUDIO_CFG_EXTERNAL       = 1
+FAMISTUDIO_CFG_DPCM_SUPPORT   = 1
+FAMISTUDIO_CFG_SFX_SUPPORT    = 1 
+FAMISTUDIO_CFG_SFX_STREAMS    = 2
+FAMISTUDIO_CFG_EQUALIZER      = 1
+FAMISTUDIO_USE_VOLUME_TRACK   = 1
+FAMISTUDIO_USE_PITCH_TRACK    = 1
+FAMISTUDIO_USE_SLIDE_NOTES    = 1
+FAMISTUDIO_USE_VIBRATO        = 1
+FAMISTUDIO_USE_ARPEGGIO       = 1
+FAMISTUDIO_CFG_SMOOTH_VIBRATO = 1
+FAMISTUDIO_USE_RELEASE_NOTES  = 1
+FAMISTUDIO_DPCM_OFF           = $e000
+
+; CA65-specifc config.
+.define FAMISTUDIO_CA65_ZP_SEGMENT   ZEROPAGE
+.define FAMISTUDIO_CA65_RAM_SEGMENT  BSS
+.define FAMISTUDIO_CA65_CODE_SEGMENT CODE
+
+.include "famistudio_ca65.s"
+
+.include "bloody_tears.s"
+
+.segment "DPCM"
+.incbin "bloody_tears.dmc"
+
+;*****************************************************************
 ; Our default palette table 16 entries for tiles and 16 entries for sprites
 ;*****************************************************************
 
@@ -229,6 +262,10 @@ loop:
     ; enable rendering
     lda #%00011110
     sta PPU_MASK
+
+    ; call famistudio play routine
+    jsr famistudio_update
+
     ; flag PPU update complete
     ldx #0
     stx nmi_ready
@@ -334,6 +371,16 @@ loop:
  .proc main
     ; main application - rendering is currently off
 
+    ; init famistudio
+    lda #1 ; NTSC 
+    ldx #.lobyte(music_data_castlevania_2)
+    ldy #.hibyte(music_data_castlevania_2)
+    jsr famistudio_init
+
+    ; ldx #.lobyte(sounds) ; set address of sound effects
+    ; ldy #.hibyte(sounds)
+    ; jsr famistudio_sfx_init
+
     ; initialize palette table
     ldx #0
 paletteloop:
@@ -342,6 +389,9 @@ paletteloop:
     inx
     cpx #32
     bcc paletteloop
+
+    lda #0 ; Play 1st song
+    jsr famistudio_music_play
 
     ; clear 1st name table
     jsr clear_nametable

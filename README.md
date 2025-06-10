@@ -10,3 +10,7 @@ A basic NES app
 - https://github.com/cc65/cc65
 - [fceux](https://fceux.com/web/home.html)
 - https://github.com/TASEmulators/fceux
+- [Mesen](https://www.mesen.ca/)
+- https://github.com/SourMesen/Mesen2/
+- [famistudio](https://famistudio.org/)
+- https://famistudio.org/doc/soundengine/
